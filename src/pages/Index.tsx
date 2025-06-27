@@ -3,6 +3,9 @@ import React, { useState } from 'react';
 import { Header } from '../components/Header';
 import { ProjectSection } from '../components/ProjectSection';
 import { ScrollToTop } from '../components/ScrollToTop';
+import { AboutSection } from '../components/AboutSection';
+import { EducationSection } from '../components/EducationSection';
+import { ContactSection } from '../components/ContactSection';
 
 export interface ImageData {
   id: string;
@@ -147,83 +150,79 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
+    <div className="min-h-screen bg-gradient-to-br from-warm-beige via-cream-white to-soft-gray">
       <Header />
       
-      {/* Hero Section */}
-      <section className="py-20 px-4 text-center bg-gradient-to-r from-amber-100 to-orange-100">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-5xl font-bold text-amber-900 mb-6">
-            Interior Design Portfolio
-          </h1>
-          <p className="text-xl text-amber-800 mb-8 leading-relaxed">
-            Creating beautiful, functional spaces that reflect your unique style and personality.
-            Explore our collection of residential and commercial design projects.
-          </p>
-          <div className="flex justify-center space-x-8 text-sm text-amber-700">
-            <span>7 Featured Projects</span>
-            <span>•</span>
-            <span>Residential & Commercial</span>
-            <span>•</span>
-            <span>Complete Design Solutions</span>
+      {/* Hero Section with Beautiful Animations */}
+      <section id="home" className="relative py-32 px-4 text-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-warm-beige/50 via-cream-white/30 to-transparent"></div>
+        <div className="relative max-w-6xl mx-auto">
+          <div className="animate-fade-in">
+            <h1 className="text-7xl md:text-8xl font-playfair font-bold text-primary-brown mb-6 animate-slide-up">
+              Sacha Subois
+            </h1>
+            <p className="text-2xl md:text-3xl text-secondary-brown mb-4 font-poppins animate-fade-in-delay-1">
+              Interior Designer
+            </p>
+            <p className="text-xl text-text-dark mb-12 max-w-3xl mx-auto leading-relaxed font-inter animate-fade-in-delay-2">
+              Creating beautiful, functional spaces that reflect your unique style and personality.
+              Transforming visions into stunning realities through thoughtful design and meticulous attention to detail.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 animate-fade-in-delay-3">
+              <button className="px-8 py-4 bg-gradient-to-r from-primary-brown to-secondary-brown text-white rounded-full font-poppins font-semibold hover:scale-105 hover:shadow-xl transition-all duration-300 text-lg">
+                View Portfolio
+              </button>
+              <button className="px-8 py-4 border-2 border-primary-brown text-primary-brown rounded-full font-poppins font-semibold hover:bg-primary-brown hover:text-white transition-all duration-300 text-lg">
+                Get In Touch
+              </button>
+            </div>
           </div>
         </div>
+        
+        {/* Floating Elements */}
+        <div className="absolute top-20 left-10 w-20 h-20 bg-accent-gold/20 rounded-full animate-floating-slow"></div>
+        <div className="absolute bottom-20 right-10 w-16 h-16 bg-secondary-brown/20 rounded-full animate-floating-fast"></div>
+        <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-primary-brown/10 rounded-full animate-floating-medium"></div>
       </section>
 
+      {/* About Section */}
+      <AboutSection />
+
+      {/* Education Section */}
+      <EducationSection />
+
       {/* Projects Section */}
-      <section className="py-16 px-4">
+      <section id="projects" className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-bold text-center text-amber-900 mb-12">
-            Featured Projects
-          </h2>
+          <div className="text-center mb-16 animate-fade-in-up">
+            <h2 className="text-5xl md:text-6xl font-playfair font-bold text-primary-brown mb-6">
+              Featured Projects
+            </h2>
+            <p className="text-xl text-text-light max-w-3xl mx-auto font-inter">
+              Discover our portfolio of exceptional interior design projects, each crafted with passion and precision.
+            </p>
+          </div>
           
           <div className="space-y-12">
             {projects.map((project, index) => (
-              <ProjectSection
+              <div 
                 key={project.id}
-                project={project}
-                onUpdateProject={updateProject}
-                isExpanded={index === 0}
-              />
+                className="animate-fade-in-up"
+                style={{ animationDelay: `${index * 0.2}s` }}
+              >
+                <ProjectSection
+                  project={project}
+                  onUpdateProject={updateProject}
+                  isExpanded={index === 0}
+                />
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* About Section */}
-      <section className="py-16 px-4 bg-gradient-to-r from-orange-100 to-amber-100">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-amber-900 mb-8">About Our Design Philosophy</h2>
-          <p className="text-lg text-amber-800 leading-relaxed mb-8">
-            We believe that great interior design is about more than just aesthetics—it's about creating 
-            spaces that enhance your daily life. Our approach combines functionality with beauty, 
-            ensuring every element serves a purpose while contributing to the overall harmony of the space.
-          </p>
-          <div className="grid md:grid-cols-3 gap-8 mt-12">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-amber-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl text-amber-900">🏠</span>
-              </div>
-              <h3 className="font-semibold text-amber-900 mb-2">Residential Design</h3>
-              <p className="text-amber-700">Creating comfortable, stylish homes that reflect your personality.</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-amber-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl text-amber-900">🏢</span>
-              </div>
-              <h3 className="font-semibold text-amber-900 mb-2">Commercial Spaces</h3>
-              <p className="text-amber-700">Professional environments that inspire productivity and success.</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-amber-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl text-amber-900">✨</span>
-              </div>
-              <h3 className="font-semibold text-amber-900 mb-2">Custom Solutions</h3>
-              <p className="text-amber-700">Tailored design solutions that meet your specific needs and vision.</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Contact Section */}
+      <ContactSection />
 
       <ScrollToTop />
     </div>
