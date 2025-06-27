@@ -9,16 +9,17 @@ interface ProjectSectionProps {
   project: ProjectData;
   onUpdateProject: (projectId: string, updatedProject: Partial<ProjectData>) => void;
   isExpanded?: boolean;
+  isEditMode?: boolean;
 }
 
 export const ProjectSection: React.FC<ProjectSectionProps> = ({
   project,
   onUpdateProject,
-  isExpanded = false
+  isExpanded = false,
+  isEditMode = false
 }) => {
   const [expanded, setExpanded] = useState(isExpanded);
   const [activeTab, setActiveTab] = useState<keyof ProjectData['images']>('elevation');
-  const [isEditMode, setIsEditMode] = useState(false);
 
   const tabs = [
     { key: 'elevation', label: 'Elevation Designs', icon: '🏠' },
@@ -50,12 +51,6 @@ export const ProjectSection: React.FC<ProjectSectionProps> = ({
                 isEditMode={isEditMode}
               />
               <div className="flex items-center space-x-4">
-                <button
-                  onClick={() => setIsEditMode(!isEditMode)}
-                  className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors text-sm"
-                >
-                  {isEditMode ? 'Save' : 'Edit'}
-                </button>
                 <button
                   onClick={() => setExpanded(!expanded)}
                   className="flex items-center space-x-2 text-amber-800 hover:text-amber-900"
