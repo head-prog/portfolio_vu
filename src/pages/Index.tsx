@@ -1,5 +1,7 @@
-
 import React, { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { LoginPage } from '@/components/LoginPage';
+import { EditModeToggle } from '@/components/EditModeToggle';
 import { Header } from '../components/Header';
 import { ProjectSection } from '../components/ProjectSection';
 import { ScrollToTop } from '../components/ScrollToTop';
@@ -33,6 +35,8 @@ export interface ProjectData {
 }
 
 const Index = () => {
+  const { isOwner, isGuest, loading } = useAuth();
+  const [isEditMode, setIsEditMode] = useState(false);
   const [projects, setProjects] = useState<ProjectData[]>([
     {
       id: '1',
@@ -142,6 +146,8 @@ const Index = () => {
   ]);
 
   const updateProject = (projectId: string, updatedProject: Partial<ProjectData>) => {
+    if (!isOwner) return; // Prevent updates if not owner
+    
     setProjects(prevProjects =>
       prevProjects.map(project =>
         project.id === projectId ? { ...project, ...updatedProject } : project
@@ -149,9 +155,29 @@ const Index = () => {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-warm-beige via-cream-white to-soft-gray flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary-brown border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-xl text-primary-brown font-poppins">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login page if user is not authenticated and not accessing as guest
+  if (!isOwner && !isGuest) {
+    return <LoginPage />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-warm-beige via-cream-white to-soft-gray">
       <Header />
+      <EditModeToggle 
+        isEditMode={isEditMode} 
+        onToggleEdit={() => setIsEditMode(!isEditMode)} 
+      />
       
       {/* Hero Section with Beautiful Animations */}
       <section id="home" className="relative py-32 px-4 text-center overflow-hidden">
@@ -179,17 +205,16 @@ const Index = () => {
           </div>
         </div>
         
-        {/* Floating Elements */}
         <div className="absolute top-20 left-10 w-20 h-20 bg-accent-gold/20 rounded-full animate-floating-slow"></div>
         <div className="absolute bottom-20 right-10 w-16 h-16 bg-secondary-brown/20 rounded-full animate-floating-fast"></div>
         <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-primary-brown/10 rounded-full animate-floating-medium"></div>
       </section>
 
       {/* About Section */}
-      <AboutSection />
+      <AboutSection isEditMode={isEditMode && isOwner} />
 
       {/* Education Section */}
-      <EducationSection />
+      <EducationSection isEditMode={isEditMode && isOwner} />
 
       {/* Projects Section */}
       <section id="projects" className="py-20 px-4">
@@ -214,6 +239,7 @@ const Index = () => {
                   project={project}
                   onUpdateProject={updateProject}
                   isExpanded={index === 0}
+                  isEditMode={isEditMode && isOwner}
                 />
               </div>
             ))}
@@ -222,7 +248,7 @@ const Index = () => {
       </section>
 
       {/* Contact Section */}
-      <ContactSection />
+      <ContactSection isEditMode={isEditMode && isOwner} />
 
       <ScrollToTop />
     </div>

@@ -10,8 +10,11 @@ interface Education {
   description: string;
 }
 
-export const EducationSection = () => {
-  const [isEditMode, setIsEditMode] = useState(false);
+interface EducationSectionProps {
+  isEditMode: boolean;
+}
+
+export const EducationSection: React.FC<EducationSectionProps> = ({ isEditMode }) => {
   const [education, setEducation] = useState<Education[]>([
     {
       id: '1',
@@ -30,6 +33,8 @@ export const EducationSection = () => {
   ]);
 
   const handleEducationUpdate = (id: string, field: keyof Education, value: string) => {
+    if (!isEditMode) return;
+    
     setEducation(prev => prev.map(edu => 
       edu.id === id ? { ...edu, [field]: value } : edu
     ));
@@ -47,14 +52,13 @@ export const EducationSection = () => {
           </p>
         </div>
 
-        <div className="flex items-center justify-center mb-8">
-          <button
-            onClick={() => setIsEditMode(!isEditMode)}
-            className="px-6 py-3 bg-primary-brown text-white rounded-lg hover:bg-secondary-brown transition-colors font-poppins"
-          >
-            {isEditMode ? 'Save Changes' : 'Edit Education'}
-          </button>
-        </div>
+        {isEditMode && (
+          <div className="flex items-center justify-center mb-8">
+            <div className="px-4 py-2 bg-primary-brown/10 text-primary-brown rounded-lg font-poppins">
+              Edit Mode Active - Click any text to edit
+            </div>
+          </div>
+        )}
 
         {/* Timeline */}
         <div className="relative">
