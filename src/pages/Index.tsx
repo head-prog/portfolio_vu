@@ -11,7 +11,7 @@ import { EducationSection } from '../components/EducationSection';
 import { ContactSection } from '../components/ContactSection';
 import { EditableText } from '../components/EditableText';
 import { SmoothScrollButton } from '../components/SmoothScrollButton';
-import { Plus } from 'react-feather';
+import { Plus } from 'lucide-react';
 
 export interface ImageData {
   id: string;
