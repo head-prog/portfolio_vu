@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 // Complete data persistence service for all editable content
 export class PortfolioDataService {
@@ -12,7 +13,7 @@ export class PortfolioDataService {
           element_type: elementType,
           element_id: elementId,
           element_value: typeof value === 'string' ? value : null,
-          json_data: typeof value === 'object' ? value : null,
+          json_data: typeof value === 'object' ? value as Json : null,
           updated_at: new Date().toISOString()
         });
 
