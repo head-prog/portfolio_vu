@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePortfolioData } from '../hooks/usePortfolioData';
@@ -12,6 +11,7 @@ import { EducationSection } from '../components/EducationSection';
 import { ContactSection } from '../components/ContactSection';
 import { EditableText } from '../components/EditableText';
 import { SmoothScrollButton } from '../components/SmoothScrollButton';
+import { Plus } from 'react-feather';
 
 export interface ImageData {
   id: string;
@@ -40,14 +40,45 @@ export interface ProjectData {
 
 const Index = () => {
   const { isOwner, isGuest, loading: authLoading } = useAuth();
-  const { userProfile, projects, loading: dataLoading, getPortfolioValue, updatePortfolioData } = usePortfolioData();
+  const { userProfile, projects, loading: dataLoading, getPortfolioValue, updatePortfolioData, setProjects } = usePortfolioData();
   const [isEditMode, setIsEditMode] = useState(false);
 
   const loading = authLoading || dataLoading;
 
   const updateProject = (projectId: string, updatedProject: Partial<ProjectData>) => {
-    // This will be handled by the enhanced ProjectSection component
-    console.log('Project update:', projectId, updatedProject);
+    setProjects(prevProjects => 
+      prevProjects.map(project => 
+        project.id === projectId 
+          ? { ...project, ...updatedProject }
+          : project
+      )
+    );
+  };
+
+  const addNewProject = () => {
+    const newProject: ProjectData = {
+      id: `project-${Date.now()}`,
+      title: 'New Project',
+      description: 'Enter project description...',
+      client: 'Client Name',
+      date: '2024',
+      category: 'Residential',
+      images: {
+        elevation: [],
+        floorPlans: [],
+        topView: [],
+        twoD: [],
+        threeD: []
+      }
+    };
+    
+    setProjects(prevProjects => [newProject, ...prevProjects]);
+  };
+
+  const removeProject = (projectId: string) => {
+    setProjects(prevProjects => 
+      prevProjects.filter(project => project.id !== projectId)
+    );
   };
 
   if (loading) {
@@ -174,7 +205,7 @@ const Index = () => {
             </p>
             
             {/* Project Category Filter */}
-            <div className="flex flex-wrap justify-center gap-3 mb-12">
+            <div className="flex flex-wrap justify-center gap-3 mb-8">
               {['ALL', 'RESIDENTIAL', 'COMMERCIAL', 'BOUTIQUE', 'HOSPITALITY'].map((category) => (
                 <button
                   key={category}
@@ -188,18 +219,32 @@ const Index = () => {
                 </button>
               ))}
             </div>
+
+            {/* Add New Project Button (Owner Mode Only) */}
+            {isEditMode && isOwner && (
+              <div className="mb-8">
+                <button
+                  onClick={addNewProject}
+                  className="flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium mx-auto"
+                >
+                  <Plus size={20} />
+                  <span>Add New Project</span>
+                </button>
+              </div>
+            )}
           </div>
           
-          <div className="space-y-12">
+          <div className="space-y-8">
             {projects.map((project, index) => (
               <div 
                 key={project.id}
                 className="animate-fade-in-up"
-                style={{ animationDelay: `${index * 0.2}s` }}
+                style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <ProjectSection
                   project={project}
                   onUpdateProject={updateProject}
+                  onRemoveProject={removeProject}
                   isExpanded={index === 0}
                   isEditMode={isEditMode && isOwner}
                 />
@@ -208,11 +253,13 @@ const Index = () => {
           </div>
           
           {/* Load More Projects Button */}
-          <div className="text-center mt-16">
-            <button className="px-8 py-3 border-2 border-primary-brown text-primary-brown rounded-full font-poppins font-medium hover:bg-primary-brown hover:text-white transition-all duration-300">
-              LOAD MORE PROJECTS
-            </button>
-          </div>
+          {!isEditMode && (
+            <div className="text-center mt-16">
+              <button className="px-8 py-3 border-2 border-primary-brown text-primary-brown rounded-full font-poppins font-medium hover:bg-primary-brown hover:text-white transition-all duration-300">
+                LOAD MORE PROJECTS
+              </button>
+            </div>
+          )}
         </div>
       </section>
 

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Eye, Edit3, Plus, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Eye, Plus, Trash2, Save } from 'lucide-react';
 import { ProjectData } from '../pages/Index';
 import { ImageGallery } from './ImageGallery';
 import { EditableField } from './EditableField';
@@ -8,6 +8,7 @@ import { EditableField } from './EditableField';
 interface ProjectSectionProps {
   project: ProjectData;
   onUpdateProject: (projectId: string, updatedProject: Partial<ProjectData>) => void;
+  onRemoveProject?: (projectId: string) => void;
   isExpanded?: boolean;
   isEditMode?: boolean;
 }
@@ -15,11 +16,13 @@ interface ProjectSectionProps {
 export const ProjectSection: React.FC<ProjectSectionProps> = ({
   project,
   onUpdateProject,
+  onRemoveProject,
   isExpanded = false,
   isEditMode = false
 }) => {
   const [expanded, setExpanded] = useState(isExpanded);
   const [activeTab, setActiveTab] = useState<keyof ProjectData['images']>('elevation');
+  const [isSaving, setIsSaving] = useState(false);
 
   const tabs = [
     { key: 'elevation', label: 'Elevation Designs', icon: '🏠', color: 'from-amber-500 to-orange-500' },
@@ -31,6 +34,21 @@ export const ProjectSection: React.FC<ProjectSectionProps> = ({
 
   const handleFieldUpdate = (field: keyof ProjectData, value: string) => {
     onUpdateProject(project.id, { [field]: value });
+  };
+
+  const handleSaveProject = async () => {
+    setIsSaving(true);
+    // Simulate save operation
+    setTimeout(() => {
+      setIsSaving(false);
+      console.log('Project saved:', project.title);
+    }, 1000);
+  };
+
+  const handleRemoveProject = () => {
+    if (onRemoveProject && window.confirm('Are you sure you want to delete this entire project?')) {
+      onRemoveProject(project.id);
+    }
   };
 
   const getTotalImageCount = () => {
@@ -49,29 +67,52 @@ export const ProjectSection: React.FC<ProjectSectionProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-amber-100 overflow-hidden hover:shadow-xl transition-all duration-300 mb-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
       {/* Project Header */}
-      <div className="relative bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
+      <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-b border-gray-200">
         <div className="p-6">
-          {/* Project Title and Actions */}
-          <div className="flex justify-between items-start mb-6">
+          {/* Project Title Row */}
+          <div className="flex justify-between items-center mb-6">
             <div className="flex-1">
               <EditableField
                 value={project.title}
                 onSave={(value) => handleFieldUpdate('title', value)}
-                className="text-2xl font-bold"
+                className="text-xl font-semibold text-amber-900"
                 isEditMode={isEditMode}
-                placeholder="Enter project title..."
-                label="Project Title"
+                placeholder="Project - Client Name"
+                label=""
                 fieldType="title"
               />
             </div>
             <div className="flex items-center space-x-3 ml-6">
+              {isEditMode && (
+                <>
+                  <button
+                    onClick={handleSaveProject}
+                    disabled={isSaving}
+                    className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-green-400 transition-colors font-medium text-sm"
+                  >
+                    {isSaving ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Save size={16} />
+                    )}
+                    <span>{isSaving ? 'Saving...' : 'Save'}</span>
+                  </button>
+                  <button
+                    onClick={handleRemoveProject}
+                    className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm"
+                  >
+                    <Trash2 size={16} />
+                    <span>Remove</span>
+                  </button>
+                </>
+              )}
               <button
                 onClick={() => setExpanded(!expanded)}
-                className="flex items-center space-x-2 px-4 py-2 text-amber-800 hover:text-amber-900 hover:bg-amber-100 rounded-lg transition-all duration-300"
+                className="flex items-center space-x-2 px-4 py-2 text-amber-800 hover:text-amber-900 hover:bg-amber-100 rounded-lg transition-all duration-300 font-medium"
               >
-                <span className="font-medium">{expanded ? 'Collapse' : 'Expand'}</span>
+                <span>{expanded ? 'Collapse' : 'Expand'}</span>
                 {expanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
               </button>
             </div>
@@ -79,69 +120,74 @@ export const ProjectSection: React.FC<ProjectSectionProps> = ({
 
           {/* Project Details Grid */}
           <div className="grid lg:grid-cols-2 gap-8">
-            {/* Left Column */}
-            <div className="space-y-6">
-              <EditableField
-                value={project.description}
-                onSave={(value) => handleFieldUpdate('description', value)}
-                isEditMode={isEditMode}
-                multiline
-                placeholder="Enter project description..."
-                label="📝 Description"
-                fieldType="description"
-              />
+            {/* Left Column - Description */}
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-semibold text-amber-800 mb-2">Description</h4>
+                <EditableField
+                  value={project.description}
+                  onSave={(value) => handleFieldUpdate('description', value)}
+                  isEditMode={isEditMode}
+                  multiline
+                  placeholder="Enter project description..."
+                  fieldType="description"
+                />
+              </div>
             </div>
 
-            {/* Right Column */}
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Right Column - Client and Year */}
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-semibold text-amber-800 mb-2">Client</h4>
                 <EditableField
                   value={project.client}
                   onSave={(value) => handleFieldUpdate('client', value)}
                   isEditMode={isEditMode}
-                  placeholder="Enter client name..."
-                  label="👤 Client"
+                  placeholder="Client name..."
                 />
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-amber-800 mb-2">Year</h4>
                 <EditableField
                   value={project.date}
                   onSave={(value) => handleFieldUpdate('date', value)}
                   isEditMode={isEditMode}
-                  placeholder="Enter year..."
-                  label="📅 Year"
+                  placeholder="Year..."
                 />
               </div>
+            </div>
+          </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <span className={`px-4 py-2 rounded-full text-sm font-semibold border-2 ${getCategoryColor(project.category)} shadow-sm`}>
-                    {project.category}
-                  </span>
-                  <div className="flex items-center space-x-2 text-amber-600">
-                    <Eye size={16} />
-                    <span className="text-sm font-medium">
-                      {getTotalImageCount()} images total
-                    </span>
-                  </div>
-                </div>
+          {/* Category and Image Count Row */}
+          <div className="flex items-center justify-between mt-6 pt-4 border-t border-amber-100">
+            <div className="flex items-center space-x-4">
+              <span className={`px-4 py-2 rounded-full text-sm font-semibold border-2 ${getCategoryColor(project.category)} shadow-sm`}>
+                {project.category}
+              </span>
+              <div className="flex items-center space-x-2 text-amber-600">
+                <Eye size={16} />
+                <span className="text-sm font-medium">
+                  {getTotalImageCount()} images total
+                </span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Project Content */}
+      {/* Expanded Content */}
       {expanded && (
-        <div className="p-6 bg-gradient-to-br from-white to-amber-50/30">
+        <div className="p-6 bg-white">
           {/* Image Category Tabs */}
           <div className="mb-8">
-            <div className="flex flex-wrap gap-3 border-b-2 border-amber-100 pb-4">
+            <div className="flex flex-wrap gap-3 border-b-2 border-gray-100 pb-4">
               {tabs.map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
                   className={`group relative px-6 py-3 font-semibold text-sm rounded-xl transition-all duration-300 flex items-center space-x-3 ${
                     activeTab === tab.key
-                      ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg transform scale-105'
+                      ? 'bg-amber-600 text-white shadow-lg transform scale-105'
                       : 'text-amber-700 hover:text-amber-900 hover:bg-amber-50 border-2 border-amber-200 hover:border-amber-300'
                   }`}
                 >
@@ -160,26 +206,36 @@ export const ProjectSection: React.FC<ProjectSectionProps> = ({
           </div>
 
           {/* Image Gallery */}
-          <div className="bg-white rounded-xl shadow-sm border-2 border-amber-100/50 p-6">
+          <div className="bg-gray-50 rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-amber-800 flex items-center space-x-2">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center space-x-2">
                 <span className="text-xl">{tabs.find(t => t.key === activeTab)?.icon}</span>
                 <span>{tabs.find(t => t.key === activeTab)?.label}</span>
               </h3>
-              <p className="text-sm text-amber-600 mt-1">
+              <p className="text-sm text-gray-600 mt-1">
                 Manage your {tabs.find(t => t.key === activeTab)?.label.toLowerCase()} images
               </p>
             </div>
             
-            <ImageGallery
-              projectId={project.id}
-              category={activeTab}
-              images={project.images[activeTab]}
-              onUpdateImages={(images) => {
-                const updatedImages = { ...project.images, [activeTab]: images };
-                onUpdateProject(project.id, { images: updatedImages });
-              }}
-            />
+            {isEditMode ? (
+              <ImageGallery
+                projectId={project.id}
+                category={activeTab}
+                images={project.images[activeTab]}
+                onUpdateImages={(images) => {
+                  const updatedImages = { ...project.images, [activeTab]: images };
+                  onUpdateProject(project.id, { images: updatedImages });
+                }}
+              />
+            ) : (
+              <div className="text-center py-12 text-gray-500">
+                <Eye size={48} className="mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-medium mb-2">
+                  {project.images[activeTab].length} images in {tabs.find(t => t.key === activeTab)?.label}
+                </p>
+                <p className="text-sm opacity-75">Switch to edit mode to manage images</p>
+              </div>
+            )}
           </div>
         </div>
       )}
