@@ -1,4 +1,3 @@
-
 -- Create comprehensive portfolio data table for all editable content
 CREATE TABLE IF NOT EXISTS public.portfolio_data (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -32,12 +31,12 @@ CREATE TABLE IF NOT EXISTS public.projects (
 -- Create user profile table for owner information
 CREATE TABLE IF NOT EXISTS public.user_profile (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT DEFAULT 'Sacha Subois',
+  name TEXT DEFAULT 'Vaishnavi Upadhyay',
   title TEXT DEFAULT 'Interior Designer & Space Planner',
   bio TEXT DEFAULT 'With over 8 years of experience in transforming spaces...',
   profile_image_url TEXT,
   phone TEXT DEFAULT '+1 (555) 123-4567',
-  email TEXT DEFAULT 'sacha@suboisdesign.com',
+  email TEXT DEFAULT 'vaishnavi@upadhyaydesign.com',
   years_experience TEXT DEFAULT '8+ Years',
   completed_projects TEXT DEFAULT '150+ Projects',
   specializations TEXT DEFAULT 'Residential & Commercial Design',
@@ -139,11 +138,11 @@ USING (
 -- Insert default user profile data
 INSERT INTO public.user_profile (name, title, bio, phone, email, years_experience, completed_projects, specializations, philosophy)
 VALUES (
-  'Sacha Subois',
+  'Vaishnavi Upadhyay',
   'Interior Designer & Space Planner',
   'With over 8 years of experience in transforming spaces, I specialize in creating harmonious environments that blend functionality with aesthetic appeal. My passion lies in understanding each client''s unique vision and bringing it to life through thoughtful design and meticulous attention to detail.',
   '+1 (555) 123-4567',
-  'sacha@suboisdesign.com',
+  'vaishnavi@upadhyaydesign.com',
   '8+ Years',
   '150+ Projects',
   'Residential & Commercial Design',

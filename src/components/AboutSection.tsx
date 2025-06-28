@@ -11,8 +11,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ isEditMode }) => {
     name: 'Vaishnavi Upadhyay',
     title: 'Interior Designer & Space Planner',
     bio: 'With over 8 years of experience in transforming spaces, I specialize in creating harmonious environments that blend functionality with aesthetic appeal. My passion lies in understanding each client\'s unique vision and bringing it to life through thoughtful design and meticulous attention to detail.',
-    experience: '8+ Years',
-    projects: '150+ Projects',
+    experience: '3+ Years',
+    projects: '15+ Projects',
     specialization: 'Residential & Commercial Design',
     philosophy: 'Every space tells a story. My role is to help you write yours beautifully.'
   });
@@ -59,7 +59,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ isEditMode }) => {
               <div className="relative">
                 <img 
                   src={profileImage}
-                  alt="Sacha Subois"
+                  alt="Vaishnavi Upadhyay"
                   className="w-80 h-80 mx-auto rounded-full object-cover shadow-2xl border-8 border-white"
                 />
                 {isEditMode && (

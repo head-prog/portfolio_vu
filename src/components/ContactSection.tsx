@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +13,7 @@ interface ContactSectionProps {
 export const ContactSection: React.FC<ContactSectionProps> = ({ isEditMode }) => {
   const [contactInfo, setContactInfo] = useState({
     phone: '+1 (555) 123-4567',
-    email: 'sacha@suboisdesign.com',
+    email: 'vaishnavi@upadhyaydesign.com',
     address: '123 Design Street, Creative District, NY 10001',
     hours: 'Mon - Fri: 9:00 AM - 6:00 PM'
   });
