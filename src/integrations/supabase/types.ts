@@ -30,6 +30,132 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolio_data: {
+        Row: {
+          element_id: string
+          element_type: string
+          element_value: string | null
+          id: string
+          json_data: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          element_id: string
+          element_type: string
+          element_value?: string | null
+          id?: string
+          json_data?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          element_id?: string
+          element_type?: string
+          element_value?: string | null
+          id?: string
+          json_data?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          category: string | null
+          client: string | null
+          created_at: string | null
+          date: string | null
+          description: string | null
+          design_2d_images: Json | null
+          elevation_images: Json | null
+          floor_plan_images: Json | null
+          id: string
+          is_active: boolean | null
+          order_index: number | null
+          render_3d_images: Json | null
+          title: string
+          top_view_images: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          client?: string | null
+          created_at?: string | null
+          date?: string | null
+          description?: string | null
+          design_2d_images?: Json | null
+          elevation_images?: Json | null
+          floor_plan_images?: Json | null
+          id?: string
+          is_active?: boolean | null
+          order_index?: number | null
+          render_3d_images?: Json | null
+          title?: string
+          top_view_images?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          client?: string | null
+          created_at?: string | null
+          date?: string | null
+          description?: string | null
+          design_2d_images?: Json | null
+          elevation_images?: Json | null
+          floor_plan_images?: Json | null
+          id?: string
+          is_active?: boolean | null
+          order_index?: number | null
+          render_3d_images?: Json | null
+          title?: string
+          top_view_images?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_profile: {
+        Row: {
+          bio: string | null
+          completed_projects: string | null
+          email: string | null
+          id: string
+          name: string | null
+          philosophy: string | null
+          phone: string | null
+          profile_image_url: string | null
+          specializations: string | null
+          title: string | null
+          updated_at: string | null
+          years_experience: string | null
+        }
+        Insert: {
+          bio?: string | null
+          completed_projects?: string | null
+          email?: string | null
+          id?: string
+          name?: string | null
+          philosophy?: string | null
+          phone?: string | null
+          profile_image_url?: string | null
+          specializations?: string | null
+          title?: string | null
+          updated_at?: string | null
+          years_experience?: string | null
+        }
+        Update: {
+          bio?: string | null
+          completed_projects?: string | null
+          email?: string | null
+          id?: string
+          name?: string | null
+          philosophy?: string | null
+          phone?: string | null
+          profile_image_url?: string | null
+          specializations?: string | null
+          title?: string | null
+          updated_at?: string | null
+          years_experience?: string | null
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           created_at: string | null
