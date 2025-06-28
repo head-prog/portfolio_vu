@@ -42,7 +42,7 @@ export const LoginPage = () => {
       <div className="relative max-w-md w-full space-y-8 animate-fade-in">
         <div className="text-center">
           <h1 className="text-6xl font-playfair font-bold text-primary-brown mb-4 animate-slide-up">
-            Sacha Subois
+            Vaishnavi 
           </h1>
           <p className="text-xl text-secondary-brown font-poppins animate-fade-in-delay-1">
             Interior Designer Portfolio
