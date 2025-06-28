@@ -121,7 +121,7 @@ const Index = () => {
             <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 animate-fade-in-delay-3">
               <SmoothScrollButton
                 targetId="projects"
-                className="px-8 py-4 bg-gradient-to-r from-primary-brown to-secondary-brown text-white rounded-full font-poppins font-semibold text-lg"
+                className="px-8 py-4 bg-gradient-to-r from-primary-brown to-secondary-brown text-white rounded-full font-poppins font-semibold text-lg hover:shadow-xl transition-all duration-300"
               >
                 View Portfolio
               </SmoothScrollButton>
@@ -147,21 +147,47 @@ const Index = () => {
       {/* Enhanced Education Section */}
       <EducationSection isEditMode={isEditMode && isOwner} />
 
-      {/* Enhanced Projects Section */}
-      <section id="projects" className="py-20 px-4">
-        <div className="max-w-7xl mx-auto">
+      {/* Enhanced Projects Section with Interior Design Background */}
+      <section id="projects" className="py-20 px-4 relative">
+        {/* Interior Design Background */}
+        <div className="absolute inset-0 opacity-5 pointer-events-none">
+          <div 
+            className="w-full h-full bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23DAA520' fill-opacity='0.1'%3E%3Cpath d='M30 0c16.569 0 30 13.431 30 30s-13.431 30-30 30S0 46.569 0 30 13.431 0 30 0z'/%3E%3Cpath d='M30 15c8.284 0 15 6.716 15 15s-6.716 15-15 15-15-6.716-15-15 6.716-15 15-15z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+            }}
+          />
+        </div>
+        
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16 animate-fade-in-up">
             <h2 className="text-5xl md:text-6xl font-playfair font-bold text-primary-brown mb-6">
-              Featured Projects
+              Portfolio
             </h2>
-            <p className="text-xl text-text-light max-w-3xl mx-auto font-inter">
+            <p className="text-xl text-text-light max-w-3xl mx-auto font-inter mb-8">
               <EditableText
                 elementId="projects_description"
-                initialValue={getPortfolioValue('text', 'projects_description', 'Discover our portfolio of exceptional interior design projects, each crafted with passion and precision.')}
+                initialValue={getPortfolioValue('text', 'projects_description', 'Explore our comprehensive portfolio of residential, commercial, and hospitality projects. Each project represents our commitment to innovative design and exceptional craftsmanship.')}
                 className="inline-block"
                 onSave={(value) => updatePortfolioData('text', 'projects_description', value)}
               />
             </p>
+            
+            {/* Project Category Filter */}
+            <div className="flex flex-wrap justify-center gap-3 mb-12">
+              {['ALL', 'RESIDENTIAL', 'COMMERCIAL', 'BOUTIQUE', 'HOSPITALITY'].map((category) => (
+                <button
+                  key={category}
+                  className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                    category === 'ALL' 
+                      ? 'bg-primary-brown text-white shadow-lg' 
+                      : 'bg-white text-primary-brown border border-primary-brown hover:bg-primary-brown hover:text-white'
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
           </div>
           
           <div className="space-y-12">
@@ -179,6 +205,13 @@ const Index = () => {
                 />
               </div>
             ))}
+          </div>
+          
+          {/* Load More Projects Button */}
+          <div className="text-center mt-16">
+            <button className="px-8 py-3 border-2 border-primary-brown text-primary-brown rounded-full font-poppins font-medium hover:bg-primary-brown hover:text-white transition-all duration-300">
+              LOAD MORE PROJECTS
+            </button>
           </div>
         </div>
       </section>
