@@ -74,3 +74,4 @@ Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-trick
 # loving-brown-portfolio-site-
 # loving-brown-portfolio-site-
 
+# Trigger redeploy
