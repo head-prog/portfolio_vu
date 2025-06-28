@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { EditableField } from './EditableField';
 
@@ -9,7 +8,7 @@ interface AboutSectionProps {
 export const AboutSection: React.FC<AboutSectionProps> = ({ isEditMode }) => {
   const [profileImage, setProfileImage] = useState('/placeholder.svg');
   const [aboutData, setAboutData] = useState({
-    name: 'Sacha Subois',
+    name: 'Vaishnavi Upadhyay',
     title: 'Interior Designer & Space Planner',
     bio: 'With over 8 years of experience in transforming spaces, I specialize in creating harmonious environments that blend functionality with aesthetic appeal. My passion lies in understanding each client\'s unique vision and bringing it to life through thoughtful design and meticulous attention to detail.',
     experience: '8+ Years',
