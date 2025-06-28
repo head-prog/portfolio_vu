@@ -127,7 +127,7 @@ const Index = () => {
             <h1 className="text-7xl md:text-8xl font-playfair font-bold text-primary-brown mb-6 animate-slide-up">
               <EditableText
                 elementId="owner_name"
-                initialValue={userProfile?.name || 'Sacha Subois'}
+                initialValue={userProfile?.name || 'Vaishnavi Upadhyay'}
                 className="inline-block"
                 onSave={(value) => updatePortfolioData('text', 'owner_name', value)}
               />

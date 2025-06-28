@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Eye, Plus, Trash2, Save } from 'lucide-react';
 import { ProjectData } from '../pages/Index';
