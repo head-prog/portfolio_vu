@@ -39,104 +39,81 @@ export const ProjectSection: React.FC<ProjectSectionProps> = ({
 
   const getCategoryColor = (category: string) => {
     const colors = {
-      'Residential': 'bg-green-100 text-green-800 border-green-200',
-      'Commercial': 'bg-blue-100 text-blue-800 border-blue-200',
-      'Hospitality': 'bg-purple-100 text-purple-800 border-purple-200',
-      'Office': 'bg-orange-100 text-orange-800 border-orange-200',
-      'Retail': 'bg-pink-100 text-pink-800 border-pink-200'
+      'Residential': 'bg-amber-100 text-amber-800 border-amber-300',
+      'Commercial': 'bg-blue-100 text-blue-800 border-blue-300',
+      'Hospitality': 'bg-purple-100 text-purple-800 border-purple-300',
+      'Office': 'bg-orange-100 text-orange-800 border-orange-300',
+      'Retail': 'bg-pink-100 text-pink-800 border-pink-300'
     };
-    return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800 border-gray-200';
+    return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800 border-gray-300';
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-amber-100 overflow-hidden hover:shadow-2xl transition-all duration-500 group">
+    <div className="bg-white rounded-xl shadow-lg border border-amber-100 overflow-hidden hover:shadow-xl transition-all duration-300 mb-6">
       {/* Project Header */}
-      <div className="relative bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border-b border-amber-100">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-[0.02]">
-          <div 
-            className="w-full h-full"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23DAA520' fill-opacity='0.1'%3E%3Cpath d='M20 20c0-11.046-8.954-20-20-20v20h20z'/%3E%3Cpath d='M40 40c0-11.046-8.954-20-20-20v20h20z'/%3E%3C/g%3E%3C/svg%3E")`
-            }}
-          />
-        </div>
-        
-        <div className="relative p-8">
+      <div className="relative bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
+        <div className="p-6">
+          {/* Project Title and Actions */}
           <div className="flex justify-between items-start mb-6">
             <div className="flex-1">
-              <div className="flex items-center justify-between mb-4">
+              <EditableField
+                value={project.title}
+                onSave={(value) => handleFieldUpdate('title', value)}
+                className="text-2xl font-bold"
+                isEditMode={isEditMode}
+                placeholder="Enter project title..."
+                label="Project Title"
+                fieldType="title"
+              />
+            </div>
+            <div className="flex items-center space-x-3 ml-6">
+              <button
+                onClick={() => setExpanded(!expanded)}
+                className="flex items-center space-x-2 px-4 py-2 text-amber-800 hover:text-amber-900 hover:bg-amber-100 rounded-lg transition-all duration-300"
+              >
+                <span className="font-medium">{expanded ? 'Collapse' : 'Expand'}</span>
+                {expanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Project Details Grid */}
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Left Column */}
+            <div className="space-y-6">
+              <EditableField
+                value={project.description}
+                onSave={(value) => handleFieldUpdate('description', value)}
+                isEditMode={isEditMode}
+                multiline
+                placeholder="Enter project description..."
+                label="📝 Description"
+                fieldType="description"
+              />
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <EditableField
-                  value={project.title}
-                  onSave={(value) => handleFieldUpdate('title', value)}
-                  className="text-3xl font-bold text-amber-900 hover:text-amber-800 transition-colors"
+                  value={project.client}
+                  onSave={(value) => handleFieldUpdate('client', value)}
                   isEditMode={isEditMode}
+                  placeholder="Enter client name..."
+                  label="👤 Client"
                 />
-                <div className="flex items-center space-x-3">
-                  {isEditMode && (
-                    <button className="p-2 text-amber-700 hover:text-amber-900 hover:bg-amber-100 rounded-lg transition-colors">
-                      <Edit3 size={18} />
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setExpanded(!expanded)}
-                    className="flex items-center space-x-2 px-4 py-2 text-amber-800 hover:text-amber-900 hover:bg-amber-100 rounded-lg transition-all duration-300 group/btn"
-                  >
-                    <span className="font-medium">{expanded ? 'Collapse' : 'Expand'}</span>
-                    <div className="transform group-hover/btn:scale-110 transition-transform">
-                      {expanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                    </div>
-                  </button>
-                </div>
-              </div>
-              
-              <div className="grid lg:grid-cols-2 gap-6 mb-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-semibold text-amber-700 block mb-2 flex items-center">
-                      📝 Project Description
-                    </label>
-                    <EditableField
-                      value={project.description}
-                      onSave={(value) => handleFieldUpdate('description', value)}
-                      className="text-amber-800 leading-relaxed"
-                      isEditMode={isEditMode}
-                      multiline
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-semibold text-amber-700 block mb-2 flex items-center">
-                        👤 Client
-                      </label>
-                      <EditableField
-                        value={project.client}
-                        onSave={(value) => handleFieldUpdate('client', value)}
-                        className="text-amber-800 font-medium"
-                        isEditMode={isEditMode}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-semibold text-amber-700 block mb-2 flex items-center">
-                        📅 Year
-                      </label>
-                      <EditableField
-                        value={project.date}
-                        onSave={(value) => handleFieldUpdate('date', value)}
-                        className="text-amber-800 font-medium"
-                        isEditMode={isEditMode}
-                      />
-                    </div>
-                  </div>
-                </div>
+                <EditableField
+                  value={project.date}
+                  onSave={(value) => handleFieldUpdate('date', value)}
+                  isEditMode={isEditMode}
+                  placeholder="Enter year..."
+                  label="📅 Year"
+                />
               </div>
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <span className={`px-4 py-2 rounded-full text-sm font-semibold border ${getCategoryColor(project.category)} shadow-sm`}>
+                  <span className={`px-4 py-2 rounded-full text-sm font-semibold border-2 ${getCategoryColor(project.category)} shadow-sm`}>
                     {project.category}
                   </span>
                   <div className="flex items-center space-x-2 text-amber-600">
@@ -146,17 +123,6 @@ export const ProjectSection: React.FC<ProjectSectionProps> = ({
                     </span>
                   </div>
                 </div>
-                
-                {isEditMode && (
-                  <div className="flex items-center space-x-2">
-                    <button className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors" title="Add Project">
-                      <Plus size={18} />
-                    </button>
-                    <button className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors" title="Delete Project">
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -165,10 +131,10 @@ export const ProjectSection: React.FC<ProjectSectionProps> = ({
 
       {/* Project Content */}
       {expanded && (
-        <div className="p-8 bg-gradient-to-br from-white to-amber-50/30">
+        <div className="p-6 bg-gradient-to-br from-white to-amber-50/30">
           {/* Image Category Tabs */}
           <div className="mb-8">
-            <div className="flex flex-wrap gap-3 border-b border-amber-100 pb-4">
+            <div className="flex flex-wrap gap-3 border-b-2 border-amber-100 pb-4">
               {tabs.map((tab) => (
                 <button
                   key={tab.key}
@@ -176,7 +142,7 @@ export const ProjectSection: React.FC<ProjectSectionProps> = ({
                   className={`group relative px-6 py-3 font-semibold text-sm rounded-xl transition-all duration-300 flex items-center space-x-3 ${
                     activeTab === tab.key
                       ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg transform scale-105'
-                      : 'text-amber-700 hover:text-amber-900 hover:bg-amber-50 border border-amber-200'
+                      : 'text-amber-700 hover:text-amber-900 hover:bg-amber-50 border-2 border-amber-200 hover:border-amber-300'
                   }`}
                 >
                   <span className="text-lg">{tab.icon}</span>
@@ -188,18 +154,23 @@ export const ProjectSection: React.FC<ProjectSectionProps> = ({
                   }`}>
                     {project.images[tab.key].length}
                   </span>
-                  
-                  {/* Active tab indicator */}
-                  {activeTab === tab.key && (
-                    <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-amber-600"></div>
-                  )}
                 </button>
               ))}
             </div>
           </div>
 
           {/* Image Gallery */}
-          <div className="bg-white rounded-xl shadow-sm border border-amber-100/50 p-6">
+          <div className="bg-white rounded-xl shadow-sm border-2 border-amber-100/50 p-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-amber-800 flex items-center space-x-2">
+                <span className="text-xl">{tabs.find(t => t.key === activeTab)?.icon}</span>
+                <span>{tabs.find(t => t.key === activeTab)?.label}</span>
+              </h3>
+              <p className="text-sm text-amber-600 mt-1">
+                Manage your {tabs.find(t => t.key === activeTab)?.label.toLowerCase()} images
+              </p>
+            </div>
+            
             <ImageGallery
               projectId={project.id}
               category={activeTab}
