@@ -1,15 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import type { User, Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
+  user: any | null;
+  session: any | null;
   userRole: string | null;
   isOwner: boolean;
   isGuest: boolean;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signIn: (username: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   accessAsGuest: () => void;
 }
@@ -25,84 +24,67 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<any | null>(null);
+  const [session, setSession] = useState<any | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          // Fetch user role from our custom users table
-          const { data: userData } = await supabase
-            .from('users')
-            .select('role')
-            .eq('id', session.user.id)
-            .single();
-          
-          setUserRole(userData?.role || null);
-          setIsGuest(false);
-        } else {
-          setUserRole(null);
-        }
-        
-        setLoading(false);
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        supabase
-          .from('users')
-          .select('role')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data: userData }) => {
-            setUserRole(userData?.role || null);
-          });
-      }
-      
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    // Check for existing session in localStorage
+    const storedUser = localStorage.getItem('portfolio_user');
+    if (storedUser) {
+      const userData = JSON.parse(storedUser);
+      setUser(userData);
+      setSession({ user: userData });
+      setUserRole(userData.role);
+    }
+    
+    setLoading(false);
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (username: string, password: string) => {
     try {
-      // Use Supabase's built-in authentication
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      // Query the custom users table
+      const { data: userData, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('username', username)
+        .eq('password', password)
+        .single();
 
-      if (error) {
-        return { error };
+      if (error || !userData) {
+        return { error: { message: 'Invalid login credentials' } };
       }
 
-      // The auth state change listener will handle setting user and role
+      // Create a session-like object
+      const userSession = {
+        id: userData.id,
+        username: userData.username,
+        role: userData.role,
+        created_at: userData.created_at
+      };
+
+      setUser(userSession);
+      setSession({ user: userSession });
+      setUserRole(userData.role);
+      setIsGuest(false);
+
+      // Store in localStorage for persistence
+      localStorage.setItem('portfolio_user', JSON.stringify(userSession));
+
       return { error: null };
     } catch (error) {
-      return { error };
+      return { error: { message: 'Login failed. Please try again.' } };
     }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
     setUser(null);
     setSession(null);
     setUserRole(null);
     setIsGuest(false);
+    localStorage.removeItem('portfolio_user');
   };
 
   const accessAsGuest = () => {
@@ -110,6 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     setSession(null);
     setUserRole(null);
+    localStorage.removeItem('portfolio_user');
   };
 
   const value = {
