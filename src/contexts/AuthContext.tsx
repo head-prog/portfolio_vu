@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
@@ -10,7 +9,7 @@ interface AuthContextType {
   isOwner: boolean;
   isGuest: boolean;
   loading: boolean;
-  signIn: (username: string, password: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   accessAsGuest: () => void;
 }
@@ -79,30 +78,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (username: string, password: string) => {
+  const signIn = async (email: string, password: string) => {
     try {
-      // First, get the user from our custom users table
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('username', username)
-        .single();
+      // Use Supabase's built-in authentication
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      if (userError || !userData) {
-        return { error: { message: 'Invalid username or password' } };
+      if (error) {
+        return { error };
       }
 
-      // For demo purposes, we'll use a simple password check
-      // In production, you'd want proper password hashing
-      if (userData.password !== password) {
-        return { error: { message: 'Invalid username or password' } };
-      }
-
-      // Create a session (simplified approach)
-      setUser({ id: userData.id } as User);
-      setUserRole(userData.role);
-      setIsGuest(false);
-      
+      // The auth state change listener will handle setting user and role
       return { error: null };
     } catch (error) {
       return { error };
@@ -110,6 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
+    await supabase.auth.signOut();
     setUser(null);
     setSession(null);
     setUserRole(null);
