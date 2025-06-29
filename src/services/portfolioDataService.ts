@@ -27,6 +27,12 @@ export class PortfolioDataService {
   // Save any editable element to database
   static async saveElement(elementType: string, elementId: string, value: string | object) {
     try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('User must be authenticated to save data');
+      }
+
       const { data, error } = await supabase
         .from('portfolio_data')
         .upsert({
@@ -50,6 +56,12 @@ export class PortfolioDataService {
   // Delete an element from database
   static async deleteElement(elementType: string, elementId: string) {
     try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('User must be authenticated to delete data');
+      }
+
       const { error } = await supabase
         .from('portfolio_data')
         .delete()
@@ -88,6 +100,12 @@ export class PortfolioDataService {
   // Upload image to storage and save URL
   static async uploadImage(file: File, elementId: string) {
     try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('User must be authenticated to upload images');
+      }
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${elementId}/${Date.now()}-${Math.random()}.${fileExt}`;
       
@@ -131,6 +149,12 @@ export class UserProfileService {
 
   static async updateProfile(updates: any) {
     try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('User must be authenticated to update profile');
+      }
+
       // First check if profile exists
       const { data: existingProfile } = await supabase
         .from('user_profile')
@@ -212,6 +236,12 @@ export class ProjectsService {
 
   static async saveProject(project: ProjectData) {
     try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('User must be authenticated to save projects');
+      }
+
       const projectData = {
         id: project.id,
         title: project.title,
@@ -224,6 +254,7 @@ export class ProjectsService {
         top_view_images: project.images.topView,
         design_2d_images: project.images.twoD,
         render_3d_images: project.images.threeD,
+        user_id: session.user.id,
         updated_at: new Date().toISOString()
       };
 
@@ -245,6 +276,12 @@ export class ProjectsService {
 
   static async updateProjectField(projectId: string, fieldName: string, value: any) {
     try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('User must be authenticated to update projects');
+      }
+
       const updates = { 
         [fieldName]: value,
         updated_at: new Date().toISOString()
@@ -266,6 +303,12 @@ export class ProjectsService {
 
   static async deleteProject(projectId: string) {
     try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('User must be authenticated to delete projects');
+      }
+
       const { error } = await supabase
         .from('projects')
         .update({ 
@@ -283,6 +326,12 @@ export class ProjectsService {
 
   static async createProject(project: Partial<ProjectData>) {
     try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('User must be authenticated to create projects');
+      }
+
       const newProject = {
         title: project.title || 'New Project',
         description: project.description || '',
@@ -296,6 +345,7 @@ export class ProjectsService {
         render_3d_images: [],
         order_index: 0,
         is_active: true,
+        user_id: session.user.id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -348,6 +398,12 @@ export class ContactService {
 
   static async getInquiries() {
     try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('User must be authenticated to view inquiries');
+      }
+
       const { data, error } = await supabase
         .from('contact_inquiries')
         .select('*')
@@ -363,6 +419,12 @@ export class ContactService {
 
   static async updateInquiryStatus(inquiryId: string, status: string) {
     try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('User must be authenticated to update inquiries');
+      }
+
       const { data, error } = await supabase
         .from('contact_inquiries')
         .update({ 
