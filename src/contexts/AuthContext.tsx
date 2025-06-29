@@ -147,10 +147,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           role: userData.role
         } as User;
 
-        // Set the user state directly for username-based auth
-        setUser(mockUser);
-        setUserRole(userData.role);
-        
         // Create a mock session
         const mockSession = {
           access_token: 'mock-token',
@@ -161,7 +157,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           user: mockUser
         } as Session;
 
+        // Set the user state directly for username-based auth
+        setUser(mockUser);
+        setUserRole(userData.role);
         setSession(mockSession);
+
+        // Inform the Supabase client about this session
+        await supabase.auth.setSession(mockSession);
 
         return { error: null };
       }
@@ -172,15 +174,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    // If we have a real Supabase session, sign out properly
-    if (session && session.access_token !== 'mock-token') {
-      await supabase.auth.signOut();
-    } else {
-      // For mock sessions, just clear the state
-      setUser(null);
-      setSession(null);
-      setUserRole(null);
-    }
+    // Always call supabase.auth.signOut() to ensure the Supabase client's session is cleared
+    await supabase.auth.signOut();
     setIsGuest(false);
   };
 
