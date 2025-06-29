@@ -1,5 +1,26 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
+import type { ImageData } from "@/pages/Index";
+
+// Helper function to safely parse image arrays from database
+function safeParseImageArray(jsonData: any): ImageData[] {
+  if (!jsonData || !Array.isArray(jsonData)) {
+    return [];
+  }
+  
+  return jsonData.filter(item => 
+    item && 
+    typeof item === 'object' && 
+    typeof item.id === 'string' &&
+    typeof item.url === 'string'
+  ).map(item => ({
+    id: item.id,
+    url: item.url,
+    name: item.name || '',
+    description: item.description || '',
+    category: item.category || ''
+  }));
+}
 
 // Complete data persistence service for all editable content
 export class PortfolioDataService {
@@ -117,7 +138,23 @@ export class ProjectsService {
         .order('order_index', { ascending: true });
 
       if (error) throw error;
-      return data || [];
+      
+      // Transform database data to match ProjectData interface
+      return (data || []).map(project => ({
+        id: project.id,
+        title: project.title || 'Untitled Project',
+        description: project.description || '',
+        client: project.client || '',
+        date: project.date || '2024',
+        category: project.category || 'Residential',
+        images: {
+          elevation: safeParseImageArray(project.elevation_images),
+          floorPlans: safeParseImageArray(project.floor_plan_images),
+          topView: safeParseImageArray(project.top_view_images),
+          twoD: safeParseImageArray(project.design_2d_images),
+          threeD: safeParseImageArray(project.render_3d_images)
+        }
+      }));
     } catch (error) {
       console.error('Failed to load projects:', error);
       return [];

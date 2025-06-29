@@ -15,7 +15,7 @@ import { Plus } from 'lucide-react';
 
 export interface ImageData {
   id: string;
-  file: File;
+  file?: File; // Made optional for database-loaded images
   url: string;
   name: string;
   description: string;
