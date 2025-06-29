@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { EditableField } from './EditableField';
+import { UserProfileService } from '../services/portfolioDataService';
+import { toast } from 'sonner';
 
 interface AboutSectionProps {
   isEditMode: boolean;
@@ -30,13 +32,24 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ isEditMode }) => {
     }
   };
 
-  const updateAboutData = (field: keyof typeof aboutData, value: string) => {
+  const updateAboutData = async (field: keyof typeof aboutData, value: string) => {
     if (!isEditMode) return;
     
-    setAboutData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    try {
+      // Save to database
+      await UserProfileService.saveProfileField(field, value);
+      
+      // Update local state
+      setAboutData(prev => ({
+        ...prev,
+        [field]: value
+      }));
+      
+      toast.success(`${field} updated successfully!`);
+    } catch (error) {
+      console.error('Failed to update profile field:', error);
+      toast.error(`Failed to update ${field}. Please try again.`);
+    }
   };
 
   return (
@@ -89,6 +102,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ isEditMode }) => {
                 className="text-4xl font-playfair font-bold text-primary-brown mb-2"
                 isEditMode={isEditMode}
                 placeholder="Name"
+                elementId="profile_name"
+                elementType="profile"
               />
               <EditableField
                 value={aboutData.title}
@@ -96,6 +111,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ isEditMode }) => {
                 className="text-xl text-secondary-brown font-poppins mb-6"
                 isEditMode={isEditMode}
                 placeholder="Professional Title"
+                elementId="profile_title"
+                elementType="profile"
               />
             </div>
 
@@ -106,6 +123,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ isEditMode }) => {
               isEditMode={isEditMode}
               multiline
               placeholder="Professional Bio"
+              elementId="profile_bio"
+              elementType="profile"
             />
 
             {/* Stats */}
@@ -117,6 +136,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ isEditMode }) => {
                   className="text-3xl font-bold text-primary-brown font-poppins"
                   isEditMode={isEditMode}
                   placeholder="Experience"
+                  elementId="profile_experience"
+                  elementType="profile"
                 />
                 <p className="text-text-light font-inter mt-2">Experience</p>
               </div>
@@ -127,6 +148,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ isEditMode }) => {
                   className="text-3xl font-bold text-primary-brown font-poppins"
                   isEditMode={isEditMode}
                   placeholder="Projects Count"
+                  elementId="profile_projects"
+                  elementType="profile"
                 />
                 <p className="text-text-light font-inter mt-2">Completed</p>
               </div>
@@ -137,6 +160,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ isEditMode }) => {
                   className="text-lg font-bold text-primary-brown font-poppins text-center"
                   isEditMode={isEditMode}
                   placeholder="Specialization"
+                  elementId="profile_specialization"
+                  elementType="profile"
                 />
                 <p className="text-text-light font-inter mt-2">Specialization</p>
               </div>
@@ -154,6 +179,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ isEditMode }) => {
                 isEditMode={isEditMode}
                 multiline
                 placeholder="Design Philosophy"
+                elementId="profile_philosophy"
+                elementType="profile"
               />
             </div>
           </div>

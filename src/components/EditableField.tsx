@@ -1,6 +1,8 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { Save, X, Trash2, Edit3 } from 'lucide-react';
+import { Save, X, Trash2, Edit3, Check, Loader2 } from 'lucide-react';
+import { PortfolioDataService } from '../services/portfolioDataService';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 interface EditableFieldProps {
   value: string;
@@ -12,6 +14,9 @@ interface EditableFieldProps {
   placeholder?: string;
   label?: string;
   fieldType?: 'text' | 'title' | 'description';
+  elementId: string;
+  elementType?: string;
+  autoSave?: boolean;
 }
 
 export const EditableField: React.FC<EditableFieldProps> = ({
@@ -23,11 +28,16 @@ export const EditableField: React.FC<EditableFieldProps> = ({
   multiline = false,
   placeholder = 'Click to edit...',
   label,
-  fieldType = 'text'
+  fieldType = 'text',
+  elementId,
+  elementType = 'text',
+  autoSave = true
 }) => {
+  const { isOwner } = useAuth();
   const [editValue, setEditValue] = useState(value);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -44,14 +54,26 @@ export const EditableField: React.FC<EditableFieldProps> = ({
   }, [isEditing]);
 
   const handleSave = async () => {
-    if (editValue.trim() === '') return;
+    if (editValue.trim() === '' || !isOwner) return;
     
     setIsSaving(true);
     try {
-      await onSave(editValue);
+      // Save to Supabase
+      await PortfolioDataService.saveElement(elementType, elementId, editValue);
+      
+      // Update local state
+      onSave(editValue);
       setIsEditing(false);
+      setLastSaved(new Date());
+      
+      toast.success('Changes saved successfully!', {
+        duration: 2000,
+      });
     } catch (error) {
       console.error('Failed to save:', error);
+      toast.error('Failed to save changes. Please try again.', {
+        duration: 3000,
+      });
     } finally {
       setIsSaving(false);
     }
@@ -62,9 +84,22 @@ export const EditableField: React.FC<EditableFieldProps> = ({
     setIsEditing(false);
   };
 
-  const handleDelete = () => {
-    if (onDelete && window.confirm('Are you sure you want to delete this field?')) {
-      onDelete();
+  const handleDelete = async () => {
+    if (!onDelete || !isOwner) return;
+    
+    if (window.confirm('Are you sure you want to delete this field?')) {
+      try {
+        setIsSaving(true);
+        // Delete from Supabase
+        await PortfolioDataService.deleteElement(elementType, elementId);
+        onDelete();
+        toast.success('Field deleted successfully!');
+      } catch (error) {
+        console.error('Failed to delete:', error);
+        toast.error('Failed to delete field. Please try again.');
+      } finally {
+        setIsSaving(false);
+      }
     }
   };
 
@@ -77,11 +112,30 @@ export const EditableField: React.FC<EditableFieldProps> = ({
     }
   };
 
-  if (!isEditMode) {
+  // Auto-save functionality
+  useEffect(() => {
+    if (!autoSave || !isEditing || !isOwner || editValue === value) return;
+
+    const timeoutId = setTimeout(() => {
+      if (editValue.trim() !== '' && editValue !== value) {
+        handleSave();
+      }
+    }, 2000); // Auto-save after 2 seconds of inactivity
+
+    return () => clearTimeout(timeoutId);
+  }, [editValue, autoSave, isEditing, isOwner, value]);
+
+  if (!isEditMode || !isOwner) {
     return (
       <div className={className}>
         {label && <label className="text-sm font-semibold text-amber-700 block mb-2">{label}</label>}
         <div className="text-amber-800">{value || placeholder}</div>
+        {lastSaved && (
+          <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
+            <Check size={12} />
+            Last saved: {lastSaved.toLocaleTimeString()}
+          </div>
+        )}
       </div>
     );
   }
@@ -91,7 +145,7 @@ export const EditableField: React.FC<EditableFieldProps> = ({
       {label && <label className="text-sm font-semibold text-amber-700 block">{label}</label>}
       
       {isEditing ? (
-        <div className="border-2 border-amber-300 rounded-lg p-3 bg-white">
+        <div className="border-2 border-amber-300 rounded-lg p-3 bg-white shadow-lg">
           {multiline ? (
             <textarea
               ref={inputRef as React.RefObject<HTMLTextAreaElement>}
@@ -101,6 +155,7 @@ export const EditableField: React.FC<EditableFieldProps> = ({
               className="w-full border-none outline-none resize-vertical min-h-20"
               placeholder={placeholder}
               rows={3}
+              disabled={isSaving}
             />
           ) : (
             <input
@@ -111,30 +166,61 @@ export const EditableField: React.FC<EditableFieldProps> = ({
               onKeyDown={handleKeyDown}
               className="w-full border-none outline-none"
               placeholder={placeholder}
+              disabled={isSaving}
             />
           )}
           
-          <div className="flex justify-end space-x-2 mt-3 pt-2 border-t border-amber-100">
-            <button
-              onClick={handleCancel}
-              className="flex items-center space-x-1 px-3 py-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors text-sm"
-              disabled={isSaving}
-            >
-              <X size={14} />
-              <span>Cancel</span>
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={isSaving || editValue.trim() === ''}
-              className="flex items-center space-x-1 px-3 py-1.5 bg-green-600 text-white hover:bg-green-700 disabled:bg-green-400 rounded-md transition-colors text-sm"
-            >
-              {isSaving ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Save size={14} />
+          <div className="flex justify-between items-center mt-3 pt-2 border-t border-amber-100">
+            <div className="flex items-center space-x-2">
+              {autoSave && (
+                <div className="text-xs text-amber-600 flex items-center gap-1">
+                  {isSaving ? (
+                    <>
+                      <Loader2 size={12} className="animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Check size={12} />
+                      Auto-save enabled
+                    </>
+                  )}
+                </div>
               )}
-              <span>Save</span>
-            </button>
+            </div>
+            
+            <div className="flex space-x-2">
+              <button
+                onClick={handleCancel}
+                className="flex items-center space-x-1 px-3 py-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors text-sm"
+                disabled={isSaving}
+              >
+                <X size={14} />
+                <span>Cancel</span>
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={isSaving || editValue.trim() === ''}
+                className="flex items-center space-x-1 px-3 py-1.5 bg-green-600 text-white hover:bg-green-700 disabled:bg-green-400 rounded-md transition-colors text-sm"
+              >
+                {isSaving ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <Save size={14} />
+                )}
+                <span>{isSaving ? 'Saving...' : 'Save'}</span>
+              </button>
+              {onDelete && (
+                <button
+                  onClick={handleDelete}
+                  disabled={isSaving}
+                  className="flex items-center space-x-1 px-3 py-1.5 bg-red-600 text-white hover:bg-red-700 disabled:bg-red-400 rounded-md transition-colors text-sm"
+                >
+                  <Trash2 size={14} />
+                  <span>Delete</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       ) : (
@@ -164,6 +250,13 @@ export const EditableField: React.FC<EditableFieldProps> = ({
               </button>
             )}
           </div>
+          
+          {lastSaved && (
+            <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
+              <Check size={12} />
+              Last saved: {lastSaved.toLocaleTimeString()}
+            </div>
+          )}
         </div>
       )}
     </div>

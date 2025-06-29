@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Eye, Plus, Trash2, Save } from 'lucide-react';
+import { ChevronDown, ChevronUp, Eye, Plus, Trash2, Save, Loader2 } from 'lucide-react';
 import { ProjectData } from '../pages/Index';
 import { ImageGallery } from './ImageGallery';
 import { EditableField } from './EditableField';
+import { ProjectsService } from '../services/portfolioDataService';
+import { toast } from 'sonner';
 
 interface ProjectSectionProps {
   project: ProjectData;
@@ -31,27 +33,91 @@ export const ProjectSection: React.FC<ProjectSectionProps> = ({
     { key: 'threeD', label: '3D Designs', icon: '🎨', color: 'from-red-500 to-rose-500' }
   ] as const;
 
-  const handleFieldUpdate = (field: keyof ProjectData, value: string) => {
-    onUpdateProject(project.id, { [field]: value });
+  const handleFieldUpdate = async (field: keyof ProjectData, value: string) => {
+    if (!isEditMode) return;
+    
+    try {
+      setIsSaving(true);
+      
+      // Save to database
+      await ProjectsService.updateProjectField(project.id, field, value);
+      
+      // Update local state
+      onUpdateProject(project.id, { [field]: value });
+      
+      toast.success(`${field} updated successfully!`);
+    } catch (error) {
+      console.error('Failed to update project field:', error);
+      toast.error(`Failed to update ${field}. Please try again.`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleSaveProject = async () => {
+    if (!isEditMode) return;
+    
     setIsSaving(true);
-    // Simulate save operation
-    setTimeout(() => {
+    try {
+      await ProjectsService.saveProject(project);
+      toast.success('Project saved successfully!');
+    } catch (error) {
+      console.error('Failed to save project:', error);
+      toast.error('Failed to save project. Please try again.');
+    } finally {
       setIsSaving(false);
-      console.log('Project saved:', project.title);
-    }, 1000);
+    }
   };
 
-  const handleRemoveProject = () => {
-    if (onRemoveProject && window.confirm('Are you sure you want to delete this entire project?')) {
-      onRemoveProject(project.id);
+  const handleRemoveProject = async () => {
+    if (!onRemoveProject || !isEditMode) return;
+    
+    if (window.confirm('Are you sure you want to delete this entire project? This action cannot be undone.')) {
+      try {
+        setIsSaving(true);
+        await ProjectsService.deleteProject(project.id);
+        onRemoveProject(project.id);
+        toast.success('Project deleted successfully!');
+      } catch (error) {
+        console.error('Failed to delete project:', error);
+        toast.error('Failed to delete project. Please try again.');
+      } finally {
+        setIsSaving(false);
+      }
+    }
+  };
+
+  const handleImageUpdate = async (category: keyof ProjectData['images'], images: any[]) => {
+    if (!isEditMode) return;
+    
+    try {
+      const fieldName = {
+        elevation: 'elevation_images',
+        floorPlans: 'floor_plan_images',
+        topView: 'top_view_images',
+        twoD: 'design_2d_images',
+        threeD: 'render_3d_images'
+      }[category];
+
+      await ProjectsService.updateProjectField(project.id, fieldName, images);
+      
+      const updatedImages = { ...project.images, [category]: images };
+      onUpdateProject(project.id, { images: updatedImages });
+      
+      toast.success('Images updated successfully!');
+    } catch (error) {
+      console.error('Failed to update images:', error);
+      toast.error('Failed to update images. Please try again.');
     }
   };
 
   const getTotalImageCount = () => {
-    return Object.values(project.images).reduce((total, images) => total + images.length, 0);
+    if (!project.images || typeof project.images !== 'object') {
+      return 0;
+    }
+    return Object.values(project.images).reduce((total, images) => {
+      return total + (Array.isArray(images) ? images.length : 0);
+    }, 0);
   };
 
   const getCategoryColor = (category: string) => {
@@ -81,6 +147,8 @@ export const ProjectSection: React.FC<ProjectSectionProps> = ({
                 placeholder="Project - Client Name"
                 label=""
                 fieldType="title"
+                elementId={`project_title_${project.id}`}
+                elementType="project_field"
               />
             </div>
             <div className="flex items-center space-x-3 ml-6">
@@ -92,15 +160,16 @@ export const ProjectSection: React.FC<ProjectSectionProps> = ({
                     className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-green-400 transition-colors font-medium text-sm"
                   >
                     {isSaving ? (
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <Loader2 size={16} className="animate-spin" />
                     ) : (
                       <Save size={16} />
                     )}
-                    <span>{isSaving ? 'Saving...' : 'Save'}</span>
+                    <span>{isSaving ? 'Saving...' : 'Save All'}</span>
                   </button>
                   <button
                     onClick={handleRemoveProject}
-                    className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm"
+                    disabled={isSaving}
+                    className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-red-400 transition-colors font-medium text-sm"
                   >
                     <Trash2 size={16} />
                     <span>Remove</span>
@@ -130,6 +199,8 @@ export const ProjectSection: React.FC<ProjectSectionProps> = ({
                   multiline
                   placeholder="Enter project description..."
                   fieldType="description"
+                  elementId={`project_description_${project.id}`}
+                  elementType="project_field"
                 />
               </div>
             </div>
@@ -143,6 +214,8 @@ export const ProjectSection: React.FC<ProjectSectionProps> = ({
                   onSave={(value) => handleFieldUpdate('client', value)}
                   isEditMode={isEditMode}
                   placeholder="Client name..."
+                  elementId={`project_client_${project.id}`}
+                  elementType="project_field"
                 />
               </div>
               <div>
@@ -152,6 +225,8 @@ export const ProjectSection: React.FC<ProjectSectionProps> = ({
                   onSave={(value) => handleFieldUpdate('date', value)}
                   isEditMode={isEditMode}
                   placeholder="Year..."
+                  elementId={`project_date_${project.id}`}
+                  elementType="project_field"
                 />
               </div>
             </div>
@@ -197,7 +272,7 @@ export const ProjectSection: React.FC<ProjectSectionProps> = ({
                       ? 'bg-white/20 text-white' 
                       : 'bg-amber-100 text-amber-800'
                   }`}>
-                    {project.images[tab.key].length}
+                    {project.images && project.images[tab.key] ? project.images[tab.key].length : 0}
                   </span>
                 </button>
               ))}
@@ -220,17 +295,14 @@ export const ProjectSection: React.FC<ProjectSectionProps> = ({
               <ImageGallery
                 projectId={project.id}
                 category={activeTab}
-                images={project.images[activeTab]}
-                onUpdateImages={(images) => {
-                  const updatedImages = { ...project.images, [activeTab]: images };
-                  onUpdateProject(project.id, { images: updatedImages });
-                }}
+                images={project.images && project.images[activeTab] ? project.images[activeTab] : []}
+                onUpdateImages={(images) => handleImageUpdate(activeTab, images)}
               />
             ) : (
               <div className="text-center py-12 text-gray-500">
                 <Eye size={48} className="mx-auto mb-4 opacity-50" />
                 <p className="text-lg font-medium mb-2">
-                  {project.images[activeTab].length} images in {tabs.find(t => t.key === activeTab)?.label}
+                  {project.images && project.images[activeTab] ? project.images[activeTab].length : 0} images in {tabs.find(t => t.key === activeTab)?.label}
                 </p>
                 <p className="text-sm opacity-75">Switch to edit mode to manage images</p>
               </div>

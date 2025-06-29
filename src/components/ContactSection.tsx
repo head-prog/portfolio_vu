@@ -5,6 +5,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Phone, Mail, MapPin, Clock } from 'lucide-react';
 import { EditableField } from './EditableField';
+import { ContactService, UserProfileService } from '../services/portfolioDataService';
+import { toast } from 'sonner';
 
 interface ContactSectionProps {
   isEditMode: boolean;
@@ -25,21 +27,55 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ isEditMode }) =>
     message: ''
   });
 
-  const updateContactInfo = (field: keyof typeof contactInfo, value: string) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const updateContactInfo = async (field: keyof typeof contactInfo, value: string) => {
     if (!isEditMode) return;
     
-    setContactInfo(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    try {
+      // Save to database
+      await UserProfileService.saveProfileField(field, value);
+      
+      // Update local state
+      setContactInfo(prev => ({
+        ...prev,
+        [field]: value
+      }));
+      
+      toast.success(`${field} updated successfully!`);
+    } catch (error) {
+      console.error('Failed to update contact info:', error);
+      toast.error(`Failed to update ${field}. Please try again.`);
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Handle form submission here
-    alert('Thank you for your message! I will get back to you soon.');
-    setFormData({ name: '', email: '', phone: '', message: '' });
+    
+    if (!formData.name || !formData.email || !formData.message) {
+      toast.error('Please fill in all required fields.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      await ContactService.submitInquiry({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        message: formData.message,
+        subject: 'Portfolio Contact Form'
+      });
+      
+      toast.success('Thank you for your message! I will get back to you soon.');
+      setFormData({ name: '', email: '', phone: '', message: '' });
+    } catch (error) {
+      console.error('Failed to submit inquiry:', error);
+      toast.error('Failed to send message. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
@@ -86,6 +122,8 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ isEditMode }) =>
                   className="text-lg text-text-dark font-inter"
                   isEditMode={isEditMode}
                   placeholder="Phone Number"
+                  elementId="contact_phone"
+                  elementType="contact"
                 />
               </CardContent>
             </Card>
@@ -104,6 +142,8 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ isEditMode }) =>
                   className="text-lg text-text-dark font-inter"
                   isEditMode={isEditMode}
                   placeholder="Email Address"
+                  elementId="contact_email"
+                  elementType="contact"
                 />
               </CardContent>
             </Card>
@@ -123,6 +163,8 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ isEditMode }) =>
                   isEditMode={isEditMode}
                   multiline
                   placeholder="Business Address"
+                  elementId="contact_address"
+                  elementType="contact"
                 />
               </CardContent>
             </Card>
@@ -141,6 +183,8 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ isEditMode }) =>
                   className="text-lg text-text-dark font-inter"
                   isEditMode={isEditMode}
                   placeholder="Business Hours"
+                  elementId="contact_hours"
+                  elementType="contact"
                 />
               </CardContent>
             </Card>
@@ -159,21 +203,23 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ isEditMode }) =>
                   <div>
                     <Input
                       type="text"
-                      placeholder="Your Name"
+                      placeholder="Your Name *"
                       value={formData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
                       className="bg-white/70 border-primary-brown/20 focus:border-primary-brown text-lg py-3"
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div>
                     <Input
                       type="email"
-                      placeholder="Your Email"
+                      placeholder="Your Email *"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
                       className="bg-white/70 border-primary-brown/20 focus:border-primary-brown text-lg py-3"
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div>
@@ -183,22 +229,25 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ isEditMode }) =>
                       value={formData.phone}
                       onChange={(e) => handleInputChange('phone', e.target.value)}
                       className="bg-white/70 border-primary-brown/20 focus:border-primary-brown text-lg py-3"
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div>
                     <Textarea
-                      placeholder="Tell me about your project..."
+                      placeholder="Tell me about your project... *"
                       value={formData.message}
                       onChange={(e) => handleInputChange('message', e.target.value)}
                       className="bg-white/70 border-primary-brown/20 focus:border-primary-brown text-lg min-h-[120px] resize-none"
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
                   <Button
                     type="submit"
+                    disabled={isSubmitting}
                     className="w-full bg-gradient-to-r from-primary-brown to-secondary-brown hover:scale-105 transition-all duration-300 font-poppins text-lg py-3"
                   >
-                    Send Message
+                    {isSubmitting ? 'Sending...' : 'Send Message'}
                   </Button>
                 </form>
               </CardContent>

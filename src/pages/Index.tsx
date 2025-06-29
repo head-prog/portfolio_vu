@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePortfolioData } from '../hooks/usePortfolioData';
 import { LoginPage } from '@/components/LoginPage';
@@ -9,9 +9,11 @@ import { ScrollToTop } from '../components/ScrollToTop';
 import { AboutSection } from '../components/AboutSection';
 import { EducationSection } from '../components/EducationSection';
 import { ContactSection } from '../components/ContactSection';
-import { EditableText } from '../components/EditableText';
+import { EditableField } from '../components/EditableField';
 import { SmoothScrollButton } from '../components/SmoothScrollButton';
+import { ProjectsService, PortfolioDataService } from '../services/portfolioDataService';
 import { Plus } from 'lucide-react';
+import { toast } from 'sonner';
 
 export interface ImageData {
   id: string;
@@ -42,8 +44,24 @@ const Index = () => {
   const { isOwner, isGuest, loading: authLoading } = useAuth();
   const { userProfile, projects, loading: dataLoading, getPortfolioValue, updatePortfolioData, setProjects } = usePortfolioData();
   const [isEditMode, setIsEditMode] = useState(false);
+  const [heroData, setHeroData] = useState({
+    ownerName: '',
+    professionalTitle: '',
+    heroDescription: ''
+  });
 
   const loading = authLoading || dataLoading;
+
+  // Load hero data from portfolio data
+  useEffect(() => {
+    if (!loading) {
+      setHeroData({
+        ownerName: getPortfolioValue('text', 'owner_name', userProfile?.name || 'Vaishnavi Upadhyay'),
+        professionalTitle: getPortfolioValue('text', 'professional_title', userProfile?.title || 'Interior Designer'),
+        heroDescription: getPortfolioValue('text', 'hero_description', 'Creating beautiful, functional spaces that reflect your unique style and personality. Transforming visions into stunning realities through thoughtful design and meticulous attention to detail.')
+      });
+    }
+  }, [loading, userProfile, getPortfolioValue]);
 
   const updateProject = (projectId: string, updatedProject: Partial<ProjectData>) => {
     setProjects(prevProjects => 
@@ -55,30 +73,58 @@ const Index = () => {
     );
   };
 
-  const addNewProject = () => {
-    const newProject: ProjectData = {
-      id: `project-${Date.now()}`,
-      title: 'New Project',
-      description: 'Enter project description...',
-      client: 'Client Name',
-      date: '2024',
-      category: 'Residential',
-      images: {
-        elevation: [],
-        floorPlans: [],
-        topView: [],
-        twoD: [],
-        threeD: []
-      }
-    };
+  const addNewProject = async () => {
+    if (!isOwner) return;
     
-    setProjects(prevProjects => [newProject, ...prevProjects]);
+    try {
+      const newProjectData = await ProjectsService.createProject({
+        title: 'New Project',
+        description: 'Enter project description...',
+        client: 'Client Name',
+        date: new Date().getFullYear().toString(),
+        category: 'Residential'
+      });
+      
+      const newProject: ProjectData = {
+        id: newProjectData.id,
+        title: newProjectData.title,
+        description: newProjectData.description || '',
+        client: newProjectData.client || '',
+        date: newProjectData.date || '',
+        category: newProjectData.category || 'Residential',
+        images: {
+          elevation: [],
+          floorPlans: [],
+          topView: [],
+          twoD: [],
+          threeD: []
+        }
+      };
+      
+      setProjects(prevProjects => [newProject, ...prevProjects]);
+      toast.success('New project created successfully!');
+    } catch (error) {
+      console.error('Failed to create project:', error);
+      toast.error('Failed to create new project. Please try again.');
+    }
   };
 
   const removeProject = (projectId: string) => {
     setProjects(prevProjects => 
       prevProjects.filter(project => project.id !== projectId)
     );
+  };
+
+  const handleHeroDataUpdate = async (field: keyof typeof heroData, value: string) => {
+    try {
+      await PortfolioDataService.saveElement('text', field, value);
+      setHeroData(prev => ({ ...prev, [field]: value }));
+      updatePortfolioData('text', field, value);
+      toast.success('Hero section updated successfully!');
+    } catch (error) {
+      console.error('Failed to update hero data:', error);
+      toast.error('Failed to update hero section. Please try again.');
+    }
   };
 
   if (loading) {
@@ -125,28 +171,37 @@ const Index = () => {
         <div className="relative max-w-6xl mx-auto">
           <div className="animate-fade-in">
             <h1 className="text-7xl md:text-8xl font-playfair font-bold text-primary-brown mb-6 animate-slide-up">
-              <EditableText
-                elementId="owner_name"
-                initialValue={userProfile?.name || 'Vaishnavi Upadhyay'}
+              <EditableField
+                value={heroData.ownerName}
+                onSave={(value) => handleHeroDataUpdate('ownerName', value)}
                 className="inline-block"
-                onSave={(value) => updatePortfolioData('text', 'owner_name', value)}
+                isEditMode={isEditMode && isOwner}
+                placeholder="Your Name"
+                elementId="owner_name"
+                elementType="text"
               />
             </h1>
             <p className="text-2xl md:text-3xl text-secondary-brown mb-4 font-poppins animate-fade-in-delay-1">
-              <EditableText
-                elementId="professional_title"
-                initialValue={userProfile?.title || 'Interior Designer'}
+              <EditableField
+                value={heroData.professionalTitle}
+                onSave={(value) => handleHeroDataUpdate('professionalTitle', value)}
                 className="inline-block"
-                onSave={(value) => updatePortfolioData('text', 'professional_title', value)}
+                isEditMode={isEditMode && isOwner}
+                placeholder="Professional Title"
+                elementId="professional_title"
+                elementType="text"
               />
             </p>
             <p className="text-xl text-text-dark mb-12 max-w-3xl mx-auto leading-relaxed font-inter animate-fade-in-delay-2">
-              <EditableText
-                elementId="hero_description"
-                initialValue={getPortfolioValue('text', 'hero_description', 'Creating beautiful, functional spaces that reflect your unique style and personality. Transforming visions into stunning realities through thoughtful design and meticulous attention to detail.')}
+              <EditableField
+                value={heroData.heroDescription}
+                onSave={(value) => handleHeroDataUpdate('heroDescription', value)}
                 className="block"
+                isEditMode={isEditMode && isOwner}
                 multiline
-                onSave={(value) => updatePortfolioData('text', 'hero_description', value)}
+                placeholder="Hero Description"
+                elementId="hero_description"
+                elementType="text"
               />
             </p>
             <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 animate-fade-in-delay-3">
@@ -196,11 +251,14 @@ const Index = () => {
               Portfolio
             </h2>
             <p className="text-xl text-text-light max-w-3xl mx-auto font-inter mb-8">
-              <EditableText
-                elementId="projects_description"
-                initialValue={getPortfolioValue('text', 'projects_description', 'Explore our comprehensive portfolio of residential, commercial, and hospitality projects. Each project represents our commitment to innovative design and exceptional craftsmanship.')}
-                className="inline-block"
+              <EditableField
+                value={getPortfolioValue('text', 'projects_description', 'Explore our comprehensive portfolio of residential, commercial, and hospitality projects. Each project represents our commitment to innovative design and exceptional craftsmanship.')}
                 onSave={(value) => updatePortfolioData('text', 'projects_description', value)}
+                className="inline-block"
+                isEditMode={isEditMode && isOwner}
+                placeholder="Projects Description"
+                elementId="projects_description"
+                elementType="text"
               />
             </p>
             
