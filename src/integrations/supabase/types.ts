@@ -9,6 +9,84 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      contact_inquiries: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          message: string
+          name: string
+          phone: string | null
+          priority: string | null
+          source: string | null
+          status: string | null
+          subject: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          message: string
+          name: string
+          phone?: string | null
+          priority?: string | null
+          source?: string | null
+          status?: string | null
+          subject?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string | null
+          priority?: string | null
+          source?: string | null
+          status?: string | null
+          subject?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      education_entries: {
+        Row: {
+          created_at: string | null
+          degree: string
+          description: string | null
+          id: string
+          institution: string
+          is_active: boolean | null
+          order_index: number | null
+          period: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          degree?: string
+          description?: string | null
+          id?: string
+          institution?: string
+          is_active?: boolean | null
+          order_index?: number | null
+          period?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          degree?: string
+          description?: string | null
+          id?: string
+          institution?: string
+          is_active?: boolean | null
+          order_index?: number | null
+          period?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       portfolio_content: {
         Row: {
           content: Json
@@ -57,6 +135,134 @@ export type Database = {
         }
         Relationships: []
       }
+      project_categories: {
+        Row: {
+          color_code: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          order_index: number | null
+        }
+        Insert: {
+          color_code?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          order_index?: number | null
+        }
+        Update: {
+          color_code?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          order_index?: number | null
+        }
+        Relationships: []
+      }
+      project_tag_relations: {
+        Row: {
+          created_at: string | null
+          id: string
+          project_id: string | null
+          tag_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          project_id?: string | null
+          tag_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          project_id?: string | null
+          tag_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_tag_relations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_tag_relations_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "project_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_tags: {
+        Row: {
+          color_code: string | null
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          color_code?: string | null
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          color_code?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      project_views: {
+        Row: {
+          id: string
+          project_id: string | null
+          referrer: string | null
+          user_agent: string | null
+          viewed_at: string | null
+          viewer_ip: string | null
+          viewer_location: string | null
+        }
+        Insert: {
+          id?: string
+          project_id?: string | null
+          referrer?: string | null
+          user_agent?: string | null
+          viewed_at?: string | null
+          viewer_ip?: string | null
+          viewer_location?: string | null
+        }
+        Update: {
+          id?: string
+          project_id?: string | null
+          referrer?: string | null
+          user_agent?: string | null
+          viewed_at?: string | null
+          viewer_ip?: string | null
+          viewer_location?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_views_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           category: string | null
@@ -74,6 +280,7 @@ export type Database = {
           title: string
           top_view_images: Json | null
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           category?: string | null
@@ -91,6 +298,7 @@ export type Database = {
           title?: string
           top_view_images?: Json | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           category?: string | null
@@ -108,6 +316,77 @@ export type Database = {
           title?: string
           top_view_images?: Json | null
           updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_analytics: {
+        Row: {
+          id: string
+          metric_data: Json | null
+          metric_name: string
+          metric_value: number | null
+          period_type: string | null
+          recorded_at: string | null
+        }
+        Insert: {
+          id?: string
+          metric_data?: Json | null
+          metric_name: string
+          metric_value?: number | null
+          period_type?: string | null
+          recorded_at?: string | null
+        }
+        Update: {
+          id?: string
+          metric_data?: Json | null
+          metric_name?: string
+          metric_value?: number | null
+          period_type?: string | null
+          recorded_at?: string | null
         }
         Relationships: []
       }
