@@ -75,14 +75,17 @@ export class PortfolioDataService {
     }
   }
 
-  // Load all portfolio data
+  // Load all portfolio data - works for both authenticated and guest users
   static async loadAllData() {
     try {
       const { data, error } = await supabase
         .from('portfolio_data')
         .select('*');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading portfolio data:', error);
+        return new Map();
+      }
       
       const dataMap = new Map();
       data?.forEach(item => {
@@ -130,7 +133,7 @@ export class PortfolioDataService {
   }
 }
 
-// User profile service
+// User profile service - works for both authenticated and guest users
 export class UserProfileService {
   static async loadProfile() {
     try {
@@ -139,7 +142,10 @@ export class UserProfileService {
         .select('*')
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading user profile:', error);
+        return null;
+      }
       return data;
     } catch (error) {
       console.error('Failed to load user profile:', error);
@@ -200,7 +206,7 @@ export class UserProfileService {
   }
 }
 
-// Projects service with complete persistence
+// Projects service with complete persistence - works for both authenticated and guest users
 export class ProjectsService {
   static async loadAllProjects() {
     try {
@@ -210,7 +216,10 @@ export class ProjectsService {
         .eq('is_active', true)
         .order('order_index', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading projects:', error);
+        return [];
+      }
       
       // Transform database data to match ProjectData interface
       return (data || []).map(project => ({
@@ -365,7 +374,7 @@ export class ProjectsService {
   }
 }
 
-// Contact inquiries service
+// Contact inquiries service - works for both authenticated and guest users
 export class ContactService {
   static async submitInquiry(inquiry: {
     name: string;

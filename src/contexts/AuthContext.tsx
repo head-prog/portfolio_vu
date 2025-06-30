@@ -32,14 +32,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
+    // Check if user previously accessed as guest
+    const guestMode = localStorage.getItem('portfolio_guest_mode');
+    if (guestMode === 'true') {
+      setIsGuest(true);
+      setLoading(false);
+      return;
+    }
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
         loadUserRole(session.user.id);
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     // Listen for auth changes
@@ -52,6 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (session?.user) {
         await loadUserRole(session.user.id);
         setIsGuest(false);
+        localStorage.removeItem('portfolio_guest_mode');
       } else {
         setUserRole(null);
       }
@@ -100,6 +110,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (username: string, password: string) => {
     try {
+      // Clear guest mode when signing in
+      localStorage.removeItem('portfolio_guest_mode');
+      setIsGuest(false);
+
       // First, check if this is an email or username
       const isEmail = username.includes('@');
       
@@ -162,9 +176,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUserRole(userData.role);
         setSession(mockSession);
 
-        // Inform the Supabase client about this session
-        await supabase.auth.setSession(mockSession);
-
         return { error: null };
       }
     } catch (error) {
@@ -177,11 +188,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Always call supabase.auth.signOut() to ensure the Supabase client's session is cleared
     await supabase.auth.signOut();
     setIsGuest(false);
+    localStorage.removeItem('portfolio_guest_mode');
   };
 
   const accessAsGuest = () => {
     setIsGuest(true);
-    signOut(); // This will clear the session
+    localStorage.setItem('portfolio_guest_mode', 'true');
+    // Clear any existing session
+    setUser(null);
+    setSession(null);
+    setUserRole(null);
+    setLoading(false);
   };
 
   const value = {
