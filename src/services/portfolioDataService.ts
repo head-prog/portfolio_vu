@@ -139,14 +139,21 @@ export class UserProfileService {
     try {
       const { data, error } = await supabase
         .from('user_profile')
-        .select('*')
-        .maybeSingle();
+        .select('*');
 
       if (error) {
         console.error('Error loading user profile:', error);
         return null;
       }
-      return data;
+
+      // Handle multiple rows case
+      if (data && data.length > 1) {
+        console.warn('Multiple user profiles found, using the first one. This indicates a data inconsistency.');
+        return data[0];
+      }
+
+      // Return the single profile or null if no profiles exist
+      return data && data.length > 0 ? data[0] : null;
     } catch (error) {
       console.error('Failed to load user profile:', error);
       return null;
